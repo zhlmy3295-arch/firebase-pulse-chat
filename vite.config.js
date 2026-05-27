@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-
+base: '/firebase-pulse-chat/'
 export default defineConfig({
   plugins: [react()],
   build: {
