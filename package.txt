@@ -1,0 +1,25 @@
+/
+├── .env.example
+├── .github/
+│   └── workflows/
+│       └── build-android.yml
+├── .gitignore
+├── android/
+├── capacitor.config.ts
+├── database.rules.json
+├── firebase-applet-config.json
+├── firebase-blueprint.json
+├── firestore.rules
+├── index.html
+├── package.json
+├── package-lock.json
+├── tsconfig.json
+├── vite.config.ts
+└── src/
+    ├── App.tsx
+    ├── main.tsx
+    ├── index.css
+    ├── vite-env.d.ts
+    └── lib/
+        ├── firebase.ts
+        └── utils.ts
