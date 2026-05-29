@@ -10,9 +10,9 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: '20'
-    - run: cd firebase-pulse-chat && npm install
-    - run: cd firebase-pulse-chat && npm run build
+    - run: npm install
+    - run: npm run build
     - uses: actions/upload-artifact@v4
       with:
-        name: firebase-pulse-chat
-        path: firebase-pulse-chat/dist
+        name: app
+        path: dist
