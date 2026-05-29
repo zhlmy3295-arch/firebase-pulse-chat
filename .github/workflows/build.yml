@@ -5,27 +5,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: firebase-pulse-chat
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Setup Node
-      uses: actions/setup-node@v4
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
         node-version: '20'
-        
-
-    - name: Install
-      run: npm install
-
-    - name: Build
-      run: npm run build
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
+    - run: cd firebase-pulse-chat && npm install
+    - run: cd firebase-pulse-chat && npm run build
+    - uses: actions/upload-artifact@v4
       with:
         name: firebase-pulse-chat
         path: firebase-pulse-chat/dist
