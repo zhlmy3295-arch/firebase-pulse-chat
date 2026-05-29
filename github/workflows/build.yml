@@ -5,6 +5,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: firebase-pulse-chat
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -25,4 +28,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: firebase-pulse-chat
-        path: dist
+        path: firebase-pulse-chat/dist
