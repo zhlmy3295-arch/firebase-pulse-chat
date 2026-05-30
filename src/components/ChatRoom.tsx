@@ -1,9 +1,9 @@
-export function ChatRoom({ username, phone, profilePic, onBack, onLeave, onOpenProfile }: any) {
+
 import { format } from "date-fns";
 import { ArrowLeft, Send, LogOut, MessageSquare, UserCircle, Users } from "lucide-react";
 import { db, ref, push, onValue, serverTimestamp, query, orderByChild } from "../lib/firebase";
 import { cn } from "../lib/utils";
-
+export function ChatRoom({ username, phone, profilePic, onBack, onLeave, onOpenProfile }: any) {
 interface ChatMessage {
   id: string;
   username: string;
