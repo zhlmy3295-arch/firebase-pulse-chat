@@ -18,7 +18,7 @@ interface ChatMessage {
   targetPhone?: string;
   text: string;
   imageUrl?: string;
-  timestamp: any; // Firestore timestamp
+  timestamp: any;
   likes?: Record<string, boolean>;
   comments?: Record<
     string,
@@ -33,17 +33,13 @@ const playTickSound = () => {
     const ctx = new AudioContext();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-
     osc.type = "square";
     osc.frequency.setValueAtTime(400, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.05);
-
     gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
-
     osc.connect(gain);
     gain.connect(ctx.destination);
-
     osc.start();
     osc.stop(ctx.currentTime + 0.05);
   } catch (e) {
@@ -54,16 +50,13 @@ const playTickSound = () => {
 export default function App() {
   const [username, setUsername] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
-  const [gender, setGender] = useState<string>("male"); // 'male' or 'female'
+  const [gender, setGender] = useState<string>("male");
   const [age, setAge] = useState<string>("");
   const [isJoined, setIsJoined] = useState(false);
   const [targetPhones, setTargetPhones] = useState<string[] | null>(null);
-
   const [profilePic, setProfilePic] = useState<string | null>(null);
-  const [showProfile, setShowProfile] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
 
-  // Read initial username from localStorage if available
   useEffect(() => {
     const saved = localStorage.getItem("chat_username");
     const savedPhone = localStorage.getItem("chat_phone");
@@ -112,7 +105,6 @@ export default function App() {
         localStorage.setItem("chat_gender", gender);
         localStorage.setItem("chat_age", age.trim());
         setIsJoined(true);
-
         const userRef = ref(db, `users/${phone.trim()}`);
         await update(userRef, {
           username: username.trim(),
@@ -125,7 +117,6 @@ export default function App() {
         localStorage.setItem("chat_username", username.trim());
         localStorage.setItem("chat_phone", phone.trim());
         setIsJoined(true);
-
         const userRef = ref(db, `users/${phone.trim()}`);
         await update(userRef, {
           username: username.trim()
@@ -150,28 +141,21 @@ export default function App() {
   if (!isJoined) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 font-sans text-slate-200">
-        <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
+        <div className="w-full max-w-md bg-slate-900 border-slate-800 rounded-2xl p-8 shadow-xl">
           <div className="flex justify-center mb-6">
             <div className="h-16 w-16 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center shadow-inner">
               <MessageSquare className="w-8 h-8" />
             </div>
           </div>
-          <h1
-            className="text-3xl font-bold text-white text-center mb-2 tracking-tight"
-            dir="auto"
-          >
+          <h1 className="text-3xl font-bold text-white text-center mb-2 tracking-tight" dir="auto">
             Pulse Chat
           </h1>
           <p className="text-slate-400 text-center mb-8" dir="auto">
             {isSignUpMode ? "انشاء حساب جديد (Create Account)" : "تسجيل الدخول (Login)"}
           </p>
-
           <form onSubmit={handleJoin} className="space-y-4" dir="auto">
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-slate-300 mb-1.5 ltr:text-left rtl:text-right"
-              >
+              <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-1.5 ltr:text-left rtl:text-right">
                 الاسم (Username)
               </label>
               <div className="relative">
@@ -181,7 +165,7 @@ export default function App() {
                 <input
                   type="text"
                   id="username"
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-800 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner"
+                  className="block w-full pl-10 pr-3 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner"
                   placeholder="مثال: علي"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -191,12 +175,8 @@ export default function App() {
                 />
               </div>
             </div>
-
             <div>
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-slate-300 mb-1.5 ltr:text-left rtl:text-right"
-              >
+              <label htmlFor="phone" className="block text-sm font-medium text-slate-300 mb-1.5 ltr:text-left rtl:text-right">
                 رقم الهاتف (Phone Number)
               </label>
               <div className="relative">
@@ -206,7 +186,7 @@ export default function App() {
                 <input
                   type="tel"
                   id="phone"
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-800 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner"
+                  className="block w-full pl-10 pr-3 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all transition-all shadow-inner"
                   placeholder="مثال: +966 5..."
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -214,41 +194,31 @@ export default function App() {
                 />
               </div>
             </div>
-
             {isSignUpMode && (
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label
-                    htmlFor="age"
-                    className="block text-sm font-medium text-slate-300 mb-1.5 ltr:text-left rtl:text-right"
-                  >
+                  <label htmlFor="age" className="block text-sm font-medium text-slate-300 mb-1.5 ltr:text-left rtl:text-right">
                     العمر (Age)
                   </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      id="age"
-                      className="block w-full px-4 py-3 border border-slate-800 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner"
-                      placeholder="مثال: 25"
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                      min="1"
-                      max="120"
-                      required
-                    />
-                  </div>
+                  <input
+                    type="number"
+                    id="age"
+                    className="block w-full px-4 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner"
+                    placeholder="مثال: 25"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    min="1"
+                    max="120"
+                    required
+                  />
                 </div>
-
                 <div className="flex-1">
-                  <label
-                    htmlFor="gender"
-                    className="block text-sm font-medium text-slate-300 mb-1.5 ltr:text-left rtl:text-right"
-                  >
+                  <label htmlFor="gender" className="block text-sm font-medium text-slate-300 mb-1.5 ltr:text-left rtl:text-right">
                     النوع (Gender)
                   </label>
                   <select
                     id="gender"
-                    className="block w-full px-4 py-3 border border-slate-800 rounded-xl bg-slate-900/50 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner appearance-none"
+                    className="block w-full px-4 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-inner appearance-none"
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
                   >
@@ -258,7 +228,6 @@ export default function App() {
                 </div>
               </div>
             )}
-
             <button
               type="submit"
               disabled={isSignUpMode ? (!username.trim() || !phone.trim() || !age.trim()) : (!username.trim() || !phone.trim())}
@@ -273,7 +242,6 @@ export default function App() {
                 <span>تسجيل دخول</span>
               )}
             </button>
-            
             <button
               type="button"
               onClick={() => setIsSignUpMode(!isSignUpMode)}
@@ -289,48 +257,19 @@ export default function App() {
   }
 
   return (
-    <>
-      
-          if (newPhone !== phone) {
-            setPhone(newPhone);
-            localStorage.setItem("chat_phone", newPhone);
-            setTargetPhones(null);
-          }
-          if (newUsername !== username) {
-            setUsername(newUsername);
-            localStorage.setItem("chat_username", newUsername);
-          }
-          if (newGender !== gender) {
-            setGender(newGender);
-            localStorage.setItem("chat_gender", newGender);
-          }
-          if (newAge !== age) {
-            setAge(newAge);
-            localStorage.setItem("chat_age", newAge);
-          }
-          setProfilePic(newPic);
-        }}
-      />
-      {!targetPhones || targetPhones.length === 0 ? (
-        <ChatSelection
-          username={username}
-          phone={phone}
-          profilePic={profilePic}
-          onJoinChat={setTargetPhones}
-          onLeave={handleLeave}
-          onOpenProfile={() => setShowProfile(true)}
-        />
-      ) : (
-        <ChatRoom
-          username={username}
-          phone={phone}
-          targetPhones={targetPhones}
-          profilePic={profilePic}
-          onBack={() => setTargetPhones(null)}
-          onLeave={handleLeave}
-          onOpenProfile={() => setShowProfile(true)}
-        />
-      )}
-    </>
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <div className="bg-slate-900 border-slate-800 rounded-2xl p-8 text-center">
+        <MessageSquare className="w-16 h-16 text-indigo-400 mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-white mb-2">مرحباً {username}</h2>
+        <p className="text-slate-400 mb-6">كده الموقع اشتغل بدون ProfileModal</p>
+        <button
+          onClick={handleLeave}
+          className="px-6 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-white font-semibold"
+        >
+          <LogOut className="w-4 h-4 inline ltr:mr-2 rtl:ml-2" />
+          تسجيل خروج
+        </button>
+      </div>
+    </div>
   );
-}
+                            }
