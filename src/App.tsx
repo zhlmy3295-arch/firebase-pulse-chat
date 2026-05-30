@@ -290,16 +290,7 @@ export default function App() {
 
   return (
     <>
-      <ProfileModal
-        isOpen={showProfile}
-        onClose={() => setShowProfile(false)}
-        username={username}
-        phone={phone}
-        gender={gender}
-        age={age}
-        profilePic={profilePic}
-        onLeave={handleLeave}
-        onSave={(newUsername: string, newPhone: string, newGender: string, newAge: string, newPic: string) => {
+      
           if (newPhone !== phone) {
             setPhone(newPhone);
             localStorage.setItem("chat_phone", newPhone);
