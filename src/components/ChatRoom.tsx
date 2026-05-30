@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+export function ChatRoom({ username, phone, profilePic, onBack, onLeave, onOpenProfile }: any) {
 import { format } from "date-fns";
 import { ArrowLeft, Send, LogOut, MessageSquare, UserCircle, Users } from "lucide-react";
 import { db, ref, push, onValue, serverTimestamp, query, orderByChild } from "../lib/firebase";
