@@ -1,16 +1,18 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, push, onValue, serverTimestamp, query, orderByChild, remove, set, update, get } from "firebase/database";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAYXXUp3PbZ1V7djrSznay69PTvHYIe4uY",
+  apiKey: "AIzaSyC09jKS84TQQY1Xm9AuveqQxEK60lx5hPc",
   authDomain: "caat-22ea0.firebaseapp.com",
   databaseURL: "https://caat-22ea0-default-rtdb.firebaseio.com",
   projectId: "caat-22ea0",
   storageBucket: "caat-22ea0.firebasestorage.app",
   messagingSenderId: "1033524289590",
-  appId: "1:1033524289590:android:b05801fe1bbe879f74f897"
+  appId: "1:1033524289590:web:95b79ea6d633724774f897",
+  measurementId: "G-K5FETP0M67"
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getDatabase(app);
-export { ref, push, onValue, serverTimestamp, query, orderByChild, remove, set, update, get };
+export const auth = getAuth(app);
+export const db = getFirestore(app);
