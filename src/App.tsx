@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { User as UserIcon, Phone, LogOut, MessageSquare, UserPlus } from "lucide-react";
-import { db, ref, update, onValue } from "./lib/firebase";
+import { db, ref, update, onValue, get } from "./lib/firebase"; // ضيف get
 import { ChatSelection } from "./components/ChatSelection";
 import { ChatRoom } from "./components/ChatRoom";
 import { ProfileModal } from "./components/ProfileModal";
 
 type TargetPhones = string[];
 
+const cleanPhoneNumber = (num: string) => num.replace(/\D/g, "");
+
 export default function App() {
-  const [username, setUsername] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
-  const [gender, setGender] = useState<string>("male");
-  const [age, setAge] = useState<string>("");
+  const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
+  const [gender, setGender] = useState("male");
+  const [age, setAge] = useState("");
   const [isJoined, setIsJoined] = useState(false);
   const [targetPhones, setTargetPhones] = useState<TargetPhones | null>(null);
-
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Read initial data from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("chat_username");
     const savedPhone = localStorage.getItem("chat_phone");
@@ -34,26 +35,20 @@ export default function App() {
     }
   }, []);
 
-  // Listen to user data changes
   useEffect(() => {
     if (phone && isJoined) {
-      const userRef = ref(db, `users/${phone}`);
+      const cleanPhone = cleanPhoneNumber(phone);
+      const userRef = ref(db, `users/${cleanPhone}`);
       const unsub = onValue(userRef, (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          if (data.profilePicture) setProfilePic(data.profilePicture);
+          setProfilePic(data.profilePicture || null);
           if (data.username && data.username !== username) {
             setUsername(data.username);
             localStorage.setItem("chat_username", data.username);
           }
-          if (data.gender && data.gender !== gender) {
-            setGender(data.gender);
-            localStorage.setItem("chat_gender", data.gender);
-          }
-          if (data.age && data.age !== age) {
-            setAge(data.age);
-            localStorage.setItem("chat_age", data.age);
-          }
+          if (data.gender) setGender(data.gender);
+          if (data.age) setAge(data.age);
         }
       });
       return () => unsub();
@@ -62,40 +57,67 @@ export default function App() {
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSignUpMode) {
-      if (username.trim() && phone.trim() && age.trim()) {
-        localStorage.setItem("chat_username", username.trim());
-        localStorage.setItem("chat_phone", phone.trim());
-        localStorage.setItem("chat_gender", gender);
-        localStorage.setItem("chat_age", age.trim());
-        setIsJoined(true);
+    setLoading(true);
+    const cleanPhone = cleanPhoneNumber(phone);
+    
+    try {
+      if (isSignUpMode) {
+        if (username.trim() && cleanPhone && age.trim()) {
+          const userRef = ref(db, `users/${cleanPhone}`);
+          const snap = await get(userRef);
+          if (snap.exists()) {
+            alert("الرقم ده متسجل قبل كده. سجل دخول بدل انشاء حساب");
+            setIsSignUpMode(false);
+            setLoading(false);
+            return;
+          }
+          
+          await update(userRef, {
+            username: username.trim(),
+            gender,
+            age: age.trim(),
+            createdAt: Date.now()
+          });
 
-        const userRef = ref(db, `users/${phone.trim()}`);
-        await update(userRef, {
-          username: username.trim(),
-          gender,
-          age: age.trim()
-        });
+          localStorage.setItem("chat_username", username.trim());
+          localStorage.setItem("chat_phone", phone.trim());
+          localStorage.setItem("chat_gender", gender);
+          localStorage.setItem("chat_age", age.trim());
+          setPhone(phone.trim());
+          setIsJoined(true);
+        }
+      } else {
+        if (username.trim() && cleanPhone) {
+          const userRef = ref(db, `users/${cleanPhone}`);
+          const snap = await get(userRef);
+          
+          if (!snap.exists()) {
+            alert("الرقم ده مش متسجل. اعمل انشاء حساب الأول");
+            setLoading(false);
+            return;
+          }
+          
+          const data = snap.val();
+          setUsername(data.username);
+          
+          localStorage.setItem("chat_username", data.username);
+          localStorage.setItem("chat_phone", phone.trim());
+          localStorage.setItem("chat_gender", data.gender || "male");
+          localStorage.setItem("chat_age", data.age || "");
+          setPhone(phone.trim());
+          setIsJoined(true);
+        }
       }
-    } else {
-      if (username.trim() && phone.trim()) {
-        localStorage.setItem("chat_username", username.trim());
-        localStorage.setItem("chat_phone", phone.trim());
-        setIsJoined(true);
-
-        const userRef = ref(db, `users/${phone.trim()}`);
-        await update(userRef, {
-          username: username.trim()
-        });
-      }
+    } catch (err) {
+      console.error(err);
+      alert("حصل خطأ. اتأكد من النت");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleLeave = () => {
-    localStorage.removeItem("chat_username");
-    localStorage.removeItem("chat_phone");
-    localStorage.removeItem("chat_gender");
-    localStorage.removeItem("chat_age");
+    localStorage.clear();
     setUsername("");
     setPhone("");
     setGender("male");
@@ -113,30 +135,20 @@ export default function App() {
               <MessageSquare className="w-8 h-8" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white text-center mb-2 tracking-tight" dir="auto">
-            Pulse Chat
-          </h1>
-          <p className="text-slate-400 text-center mb-8" dir="auto">
-            {isSignUpMode ? "انشاء حساب جديد" : "تسجيل الدخول"}
-          </p>
+          <h1 className="text-3xl font-bold text-white text-center mb-2">Pulse Chat</h1>
+          <p className="text-slate-400 text-center mb-8">{isSignUpMode ? "انشاء حساب جديد" : "تسجيل الدخول"}</p>
 
-          <form onSubmit={handleJoin} className="space-y-4" dir="auto">
+          <form onSubmit={handleJoin} className="space-y-4" dir="rtl">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-1.5">
-                الاسم (Username)
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">الاسم</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <UserIcon className="h-5 w-5 text-slate-500" />
-                </div>
+                <UserIcon className="absolute left-3 top-3.5 h-5 w-5 text-slate-500" />
                 <input
                   type="text"
-                  id="username"
-                  className="block w-full pl-10 pr-3 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="block w-full pl-10 pr-3 py-3 border border-slate-800 rounded-xl bg-slate-900/50 text-white focus:ring-2 focus:ring-indigo-500"
                   placeholder="مثال: علي"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  autoFocus
                   maxLength={24}
                   required
                 />
@@ -144,18 +156,13 @@ export default function App() {
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-slate-300 mb-1.5">
-                رقم الهاتف
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">رقم الهاتف</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-slate-500" />
-                </div>
+                <Phone className="absolute left-3 top-3.5 h-5 w-5 text-slate-500" />
                 <input
                   type="tel"
-                  id="phone"
-                  className="block w-full pl-10 pr-3 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="+966 5..."
+                  className="block w-full pl-10 pr-3 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white"
+                  placeholder="+20 10..."
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
@@ -166,26 +173,12 @@ export default function App() {
             {isSignUpMode && (
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label htmlFor="age" className="block text-sm font-medium text-slate-300 mb-1.5">العمر</label>
-                  <input
-                    type="number"
-                    id="age"
-                    className="block w-full px-4 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    min="1"
-                    max="120"
-                    required
-                  />
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">العمر</label>
+                  <input type="number" className="w-full px-4 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white" value={age} onChange={(e) => setAge(e.target.value)} min="10" max="100" required />
                 </div>
                 <div className="flex-1">
-                  <label htmlFor="gender" className="block text-sm font-medium text-slate-300 mb-1.5">النوع</label>
-                  <select
-                    id="gender"
-                    className="block w-full px-4 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                  >
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">النوع</label>
+                  <select className="w-full px-4 py-3 border-slate-800 rounded-xl bg-slate-900/50 text-white" value={gender} onChange={(e) => setGender(e.target.value)}>
                     <option value="male">ذكر</option>
                     <option value="female">أنثى</option>
                   </select>
@@ -193,19 +186,11 @@ export default function App() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={isSignUpMode ? (!username.trim() || !phone.trim() || !age.trim()) : (!username.trim() || !phone.trim())}
-              className="w-full mt-4 py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/20 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50"
-            >
-              {isSignUpMode ? "انشاء حساب" : "تسجيل دخول"}
+            <button type="submit" disabled={loading} className="w-full mt-4 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50">
+              {loading ? "جاري..." : isSignUpMode ? "انشاء حساب" : "تسجيل دخول"}
             </button>
             
-            <button
-              type="button"
-              onClick={() => setIsSignUpMode(!isSignUpMode)}
-              className="w-full mt-2 py-2 text-sm text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-2"
-            >
+            <button type="button" onClick={() => setIsSignUpMode(!isSignUpMode)} className="w-full mt-2 py-2 text-sm text-slate-400 hover:text-white flex items-center justify-center gap-2">
               {!isSignUpMode && <UserPlus className="w-4 h-4" />}
               {isSignUpMode ? "العودة لتسجيل الدخول" : "ليس لديك حساب؟ انشاء حساب"}
             </button>
@@ -226,25 +211,30 @@ export default function App() {
         age={age}
         profilePic={profilePic}
         onLeave={handleLeave}
-        onSave={(newUsername: string, newPhone: string, newGender: string, newAge: string, newPic: string | null) => {
-          if (newPhone !== phone) {
+        onSave={(newUsername, newPhone, newGender, newAge, newPic) => {
+          const cleanNewPhone = cleanPhoneNumber(newPhone);
+          const cleanOldPhone = cleanPhoneNumber(phone);
+          
+          if (cleanNewPhone !== cleanOldPhone) {
+            // نقل الداتا للرقم الجديد
+            const oldRef = ref(db, `users/${cleanOldPhone}`);
+            const newRef = ref(db, `users/${cleanNewPhone}`);
+            update(newRef, { username: newUsername, gender: newGender, age: newAge, profilePicture: newPic });
+            update(oldRef, null); // حذف القديم
             setPhone(newPhone);
             localStorage.setItem("chat_phone", newPhone);
             setTargetPhones(null);
+          } else {
+            update(ref(db, `users/${cleanPhoneNumber(phone)}`), { username: newUsername, gender: newGender, age: newAge, profilePicture: newPic });
           }
-          if (newUsername !== username) {
-            setUsername(newUsername);
-            localStorage.setItem("chat_username", newUsername);
-          }
-          if (newGender !== gender) {
-            setGender(newGender);
-            localStorage.setItem("chat_gender", newGender);
-          }
-          if (newAge !== age) {
-            setAge(newAge);
-            localStorage.setItem("chat_age", newAge);
-          }
+          
+          setUsername(newUsername);
+          setGender(newGender);
+          setAge(newAge);
           setProfilePic(newPic);
+          localStorage.setItem("chat_username", newUsername);
+          localStorage.setItem("chat_gender", newGender);
+          localStorage.setItem("chat_age", newAge);
         }}
       />
       
@@ -262,6 +252,7 @@ export default function App() {
           username={username}
           phone={phone}
           profilePic={profilePic}
+          targetPhones={targetPhones} // ضيفته هنا
           onBack={() => setTargetPhones(null)}
           onLeave={handleLeave}
           onOpenProfile={() => setShowProfile(true)}
@@ -269,4 +260,4 @@ export default function App() {
       )}
     </>
   );
-    }
+}
