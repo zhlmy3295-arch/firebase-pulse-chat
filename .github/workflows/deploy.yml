@@ -3,11 +3,16 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
+  workflow_dispatch: # عشان تقدر تشغله يدوي من GitHub
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -19,11 +24,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          
+          node-version: 20  # خليته 20 عشان Vite 5+ محتاجه
+          cache: 'npm'      # ده هيمنع الـ skipped
       
       - name: Install dependencies
-        run: npm install
+        run: npm ci  # ci أسرع وأضمن من install
       
       - name: Build
         run: npm run build
