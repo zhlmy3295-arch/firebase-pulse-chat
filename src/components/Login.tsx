@@ -1,50 +1,21 @@
-import { useState } from 'react'
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
 
-export default function Login() {
-  const [phone, setPhone] = useState("")
-  const [password, setPassword] = useState("")
-  const auth = getAuth()
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyC09jKS84TQQY1Xm9AuveqQxEK60lx5hPc",
+  authDomain: "caat-22ea0.firebaseapp.com",
+  databaseURL: "https://caat-22ea0-default-rtdb.firebaseio.com",
+  projectId: "caat-22ea0",
+  storageBucket: "caat-22ea0.firebasestorage.app",
+  messagingSenderId: "1033524289590",
+  appId: "1:1033524289590:web:753f05df32b8b49474f897",
+  measurementId: "G-KWZ5FSJMXW"
+};
 
-  // الخدعة: نحول الرقم لايميل
-  const getFakeEmail = (phone: string) => phone.trim() + "@app.com"
-
-  const register = async () => {
-    const email = getFakeEmail(phone)
-    try {
-      await createUserWithEmailAndPassword(auth, email, password)
-      alert("تم التسجيل")
-    } catch (e: any) {
-      alert("خطأ: " + e.message)
-    }
-  }
-
-  const login = async () => {
-    const email = getFakeEmail(phone)
-    try {
-      await signInWithEmailAndPassword(auth, email, password)
-      alert("دخلت")
-    } catch (e: any) {
-      alert("خطأ")
-    }
-  }
-
-  return (
-    <div style={{padding: 20, display: 'flex', flexDirection: 'column', gap: 10}}>
-      <h2>تسجيل الدخول</h2>
-      <input 
-        placeholder="+2010..." 
-        value={phone} 
-        onChange={e => setPhone(e.target.value)} 
-      />
-      <input 
-        type="password" 
-        placeholder="كلمة السر" 
-        value={password} 
-        onChange={e => setPassword(e.target.value)} 
-      />
-      <button onClick={login}>دخول</button>
-      <button onClick={register}>انشاء حساب</button>
-    </div>
-  )
-  }
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
