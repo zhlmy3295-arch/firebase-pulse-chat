@@ -247,7 +247,28 @@ function ChatSelection({ username, phone, profilePic, onJoinChat, onLeave, onOpe
   const [showSearch, setShowSearch] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   useEffect(() => { localStorage.setItem(`saved_numbers_${phone}`, JSON.stringify(targetInputs)); }, [targetInputs, phone]);
-  const handleAddNumber = async (e: React.FormEvent) => { e.preventDefault(); setSearchError(null); const trimmed = currentInput.trim(); if (trimmed &&!targetInputs.includes(trimmed)) { try { const userRef = ref(db, `users/${trimmed}`); const snapshot = await get(userRef); if (snapshot.exists()) { setTargetInputs([...targetInputs, trimmed]); setCurrentInput(""); } else { setSearchError("هذا الرقم غير مسجل في التطبيق."); } catch (err) { console.error("Error fetching user:", err); setSearchError("حدث خطأ أثناء البحث عن الرقم."); } else if (targetInputs.includes(trimmed)) { setSearchError("هذا الرقم مضاف بالفعل."); } };
+  const handleAddNumber = async (e: React.FormEvent) => { 
+  e.preventDefault(); 
+  setSearchError(null); 
+  const trimmed = currentInput.trim(); 
+  if (trimmed && !targetInputs.includes(trimmed)) { 
+    try { 
+      const userRef = ref(db, `users/${trimmed}`); 
+      const snapshot = await get(userRef); 
+      if (snapshot.exists()) { 
+        setTargetInputs([...targetInputs, trimmed]); 
+        setCurrentInput(""); 
+      } else { 
+        setSearchError("هذا الرقم غير مسجل في التطبيق."); 
+      } 
+    } catch (err) { // <-- كان ناقص القفلة دي
+      console.error("Error fetching user:", err); 
+      setSearchError("حدث خطأ أثناء البحث عن الرقم."); 
+    } 
+  } else if (targetInputs.includes(trimmed)) { 
+    setSearchError("هذا الرقم مضاف بالفعل."); 
+  } 
+};
   const handleRemoveNumber = (num: string) => { setTargetInputs(targetInputs.filter((n) => n!== num)); };
   const handleSubmit = () => { if (targetInputs.length > 0) { onJoinChat(targetInputs); } };
   return (
