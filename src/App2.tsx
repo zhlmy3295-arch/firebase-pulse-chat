@@ -24,4 +24,17 @@ const App = () => {
   };
 
   return (
-    <ScrollView style={styles.container>
+    <ScrollView style={styles.container}> {/* ← صلحتها هنا */}
+      {/* باقي الكود بتاعك */}
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});
+
+export default App;
