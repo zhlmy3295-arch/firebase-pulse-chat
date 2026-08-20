@@ -24,4 +24,4 @@ const App = () => {
   };
 
   return (
-    <ScrollView style={styles.container
+    <ScrollView style={styles.container>
