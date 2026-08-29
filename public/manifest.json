@@ -1,6 +1,6 @@
 {
   "name": "com.fun chatting.app",
-  "short_name": "Pulse",
+  "short_name": "fun",
   "description": "تطبيق شات سريع",
   "start_url": "/",
   "display": "standalone",
