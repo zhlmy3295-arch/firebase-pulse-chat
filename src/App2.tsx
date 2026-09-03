@@ -9,7 +9,7 @@ import {
   Image,
   StatusBar,
   Platform
-} from 'react-native';
+
 
 const App = () => {
   const [showDownload, setShowDownload] = useState(false);
