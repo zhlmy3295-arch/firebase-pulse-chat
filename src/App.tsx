@@ -249,7 +249,7 @@ export default function App() {
             className="text-3xl font-bold text-white text-center mb-2 tracking-tight"
             dir="auto"
           >
-            Pulse Chat
+            posti
           </h1>
           <p className="text-slate-400 text-center mb-8" dir="auto">
             {isSignUpMode ? "انشاء حساب جديد (Create Account)" : "تسجيل الدخول (Login)"}
