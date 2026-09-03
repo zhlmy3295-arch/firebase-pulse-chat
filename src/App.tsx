@@ -43,7 +43,7 @@ import {
 } from "./lib/firebase";
 import { cn } from "./lib/utils";
 
-import GlobalChat from "./components/globalchat";
+import GlobalChat from "./components/GlobalChat";
 
 interface ChatMessage {
   id: string;
