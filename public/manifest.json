@@ -1,6 +1,6 @@
 {
-  "name": "com.fun chatting.app",
-  "short_name": "fun",
+  "name": "posti",
+"short_name": "posti",
   "description": "تطبيق شات سريع",
   "start_url": "/",
   "display": "standalone",
